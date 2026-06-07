@@ -99,14 +99,16 @@ local function parseNovel(novelURL)
     local img = data.props.series.cover
     img = img and expandURL("storage/" .. img.path) or imageURL
     local desc = data.props.series.description:gsub("<p>", ""):gsub("</p>", "\n\n"):gsub("<br>", "\n")
-    local chapters_data = dkjson.GET(url .. "/chapters/free?sort_order=asc")
+    local chapters_data = dkjson.GET(url .. "/chapters?sort_order=asc")
     local chapters = {}
     for i, v in next, chapters_data.chapters do
-        table.insert(chapters, NovelChapter {
-            order = i,
-            title = v.name,
-            link = novelURL .. "/" .. v.slug
-        })
+		if not v.is_premium or v.price == 0 then
+        	table.insert(chapters, NovelChapter {
+            	order = v.number,
+	            title = v.name,
+	            link = novelURL .. "/" .. v.slug
+	        })
+		end
     end
     return NovelInfo({
         title = title,
