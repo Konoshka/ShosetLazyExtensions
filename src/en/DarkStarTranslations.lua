@@ -99,7 +99,7 @@ local function parseNovel(novelURL)
     local img = data.props.series.cover
     img = img and expandURL("storage/" .. img.path) or imageURL
     local desc = data.props.series.description:gsub("<p>", ""):gsub("</p>", "\n\n"):gsub("<br>", "\n")
-    local chapters_data = dkjson.GET(url .. "/chapters?sort_order=asc")
+    local chapters_data = dkjson.GET(url .. "/chapters/free?sort_order=asc")
     local chapters = {}
     for i, v in next, chapters_data.chapters do
         table.insert(chapters, NovelChapter {
