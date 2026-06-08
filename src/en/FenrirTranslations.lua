@@ -83,7 +83,7 @@ local function getPassage(chapterURL)
 
     --- Chapter page, extract info from it.
     local document = GETDocument(url)
-    local htmlElement = first(document:select("div[id]"), attribContains("id", "reader%-area"))
+    local htmlElement = first(document:select("div[class]"), attribContains("class", "reader%-area"))
     return pageOfElem(htmlElement, true)
 end
 
@@ -134,8 +134,8 @@ local function parseNovel(novelURL)
         if not v.locked or v.locked.price == 0 then            
             table.insert(chapters, NovelChapter {
                 order = v.index,
-                title = v.name or v.title,
-                link = raw_url .. "/chapter-" .. v.number
+                title = (v.group.name or "") .. (v.name or v.title),
+                link = raw_url .. "/" .. v.slug
             })
         end
     end
@@ -153,7 +153,7 @@ local function parseNovel(novelURL)
         description = data.description,
         alternativeTitles = data.alt_title and { data.alt_title } or nil,
         tags = tags,
-        generes = genres,
+        genres = genres,
         user = data.user and data.user.name or nil,
         chapters = chapters
     })
