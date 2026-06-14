@@ -98,7 +98,21 @@ local function parseNovel(novelURL)
     local title = data.props.series.title
     local img = data.props.series.cover
     img = img and expandURL("storage/" .. img.path) or imageURL
-    local desc = data.props.series.description:gsub("<p>", ""):gsub("</p>", "\n\n"):gsub("<br>", "\n")
+    local desc = data.props.series.description:gsub("<p>", ""):gsub("</p>", "\n\n"):gsub("<br>", "\n"):gsub("</?strong>", "")
+    local status = ({
+            ["ongoing"] = NovelStatus.PUBLISHING,
+            ["completed"] = NovelStatus.COMPLETED,
+            ["hiatus"] = NovelStatus.PAUSED,
+            ["cancelled"] = NovelStatus.PAUSED,
+        })[data.props.series.story_state]
+    local genres = {}
+    for _, v in next, data.props.series.genres do
+          table.insert(genres, v.name)
+    end
+    local tags = {}
+    for _, v in next, data.props.series.tags do
+          table.insert(tags, v.name)
+    end
     local chapters_data = dkjson.GET(url .. "/chapters?sort_order=asc")
     local chapters = {}
     for i, v in next, chapters_data.chapters do
@@ -114,6 +128,9 @@ local function parseNovel(novelURL)
         title = title,
         imageURL = img,
         description = desc,
+        status = status,
+        genres = genres,
+        tags = tags,
         chapters = AsList(chapters)
     })
 end

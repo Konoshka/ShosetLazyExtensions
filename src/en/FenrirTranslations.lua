@@ -129,6 +129,7 @@ local function parseNovel(novelURL)
     local data = dkjson.decode(b64dec(novelURL:match(".+#(.+)$")))
     local chapter_data = dkjson.GET(expandURL("api/new/v2/series/" .. data.slug .. "/chapters"))
     local raw_url = novelURL:match("(.+)#.+$")
+    local description = data.description:gsub("<p.->", ""):gsub("</p>", "\n\n"):gsub("</?strong>", ""):gsub("<br>", "\n")
     local chapters = {}
     for _, v in next, chapter_data do
         if not v.locked or v.locked.price == 0 then            
@@ -139,6 +140,12 @@ local function parseNovel(novelURL)
             })
         end
     end
+    local status = ({
+        ["Ongoing"] = NovelStatus.PUBLISHING,
+        ["Completed"] = NovelStatus.COMPLETED,
+        ["On Hold"] = NovelStatus.PAUSED,
+        ["Dropped"] = NovelStatus.PAUSED,
+    })[data.status]
     local tags = {}
     for _, v in next, data.tags do
         table.insert(tags, v.name)
@@ -150,8 +157,9 @@ local function parseNovel(novelURL)
     return NovelInfo({
         title = data.title,
         imageURL = data.cover and expandURL(shrinkURL(data.cover)) or imageURL,
-        description = data.description,
+        description = description,
         alternativeTitles = data.alt_title and { data.alt_title } or nil,
+        status = status,
         tags = tags,
         genres = genres,
         user = data.user and data.user.name or nil,
